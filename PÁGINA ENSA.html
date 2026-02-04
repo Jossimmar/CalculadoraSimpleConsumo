@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENSASmart: Reclamo Bajo Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #4CAF50, #2196F3);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .title-section h1 {
+            font-size: 2rem;
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .title-section p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .search-section {
+            position: relative;
+        }
+
+        .search-input {
+            padding: 12px 45px 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1rem;
+            width: 300px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            min-height: calc(100vh - 120px);
+        }
+
+        .appliances-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .appliances-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .appliance-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .appliance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .appliance-card:hover::before {
+            left: 100%;
+        }
+
+        .appliance-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-color: #2196F3;
+        }
+
+        .appliance-card.selected {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            border-color: #1976D2;
+        }
+
+        .appliance-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .appliance-icon {
+            font-size: 2.5rem;
+            flex-shrink: 0;
+        }
+
+        .appliance-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .appliance-consumption {
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+
+        .appliance-usage {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-btn:hover {
+            background: #45a049;
+            transform: scale(1.1);
+        }
+
+        .appliance-card.selected .quantity-btn {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .appliance-card.selected .quantity-btn:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .quantity-display {
+            font-size: 1.3rem;
+            font-weight: bold;
+            min-width: 25px;
+            text-align: center;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .panel h3 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .custom-appliance-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .edit-toggle-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #666;
+            z-index: 2;
+        }
+        .appliance-card.selected .edit-toggle-btn {
+            color: white;
+        }
+        .appliance-edit-section {
+            display: none; /* Hidden by default */
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+        .appliance-card.selected .appliance-edit-section {
+            border-top-color: rgba(255,255,255,0.3);
+        }
+        .appliance-edit-section.visible {
+            display: block; /* Show when toggled */
+        }
+        .edit-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .edit-controls input {
+            width: 80px;
+            padding: 8px;
+        }
+        .edit-controls select {
+            flex-grow: 1;
+            padding: 8px;
+        }
+        .edit-actions button {
+            width: 100%;
+            padding: 8px;
+            font-size: 0.9rem;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .edit-actions button:hover {
+            background: #45a049;
+        }
+
+        .tariff-section {
+            margin-bottom: 20px;
+        }
+
+        .tariff-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .tariff-input:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+        }
+
+        .consumption-display {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .consumption-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 5px;
+            transition: all 0.5s ease;
+        }
+
+        .consumption-label {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .cost-estimate {
+            font-size: 1.5rem;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .chart-canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .reset-section {
+            text-align: center;
+        }
+
+        .reset-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ff5722);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255,107,107,0.3);
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,107,107,0.4);
+        }
+
+        .no-results {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .pulse {
+            animation: pulse 1s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .search-input {
+                width: 250px;
+            }
+            
+            .appliances-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+        <div class="logo-section">
+            <img src="logo_ensa.png" alt="ENSA" class="logo-img" style="height:100px; border-radius:15px;">
+                <div class="title-section">
+                    <h1>ENSASmart: Reclamo Bajo Control</h1>
+                    <p>Plataforma Inteligente para el Cálculo de Consumo Eléctrico</p>
+                </div>
+            </div>
+            <div class="search-section">
+                <input type="text" class="search-input" placeholder="Buscar electrodoméstico..." id="searchInput">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="appliances-section">
+            <div class="appliances-grid" id="appliancesGrid">
+                <!-- Los electrodomésticos se generarán dinámicamente -->
+            </div>
+            <div class="no-results" id="noResults" style="display: none;">
+                No se encontraron electrodomésticos que coincidan con tu búsqueda.
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="panel">
+                <h3>⚙️ Configuración</h3>
+                <div class="tariff-section">
+                    <label for="tariffInput">Tarifa por kWh (S/)</label>
+                    <input type="number" class="tariff-input" id="tariffInput" value="0.7125" step="0.0001" min="0">
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>📊 Resumen de Consumo</h3>
+                <div class="consumption-display">
+                    <div class="consumption-value" id="totalConsumption">0</div>
+                    <div class="consumption-label">kWh/mes</div>
+                    <div class="cost-estimate">S/ <span id="estimatedCost">0.00</span>/mes</div>
+                </div>
+            </div>
+
+            <div class="panel" id="customAppliancePanel">
+                <h3>⚡️ Añadir Aparato Personalizado</h3>
+                <div class="custom-appliance-form">
+                    <input type="text" id="customName" class="tariff-input" placeholder="Nombre del aparato">
+                    <input type="number" id="customAmps" class="tariff-input" placeholder="Corriente (A)">
+                    <input type="number" id="customHours" class="tariff-input" placeholder="Horas de uso">
+                    <select id="customPeriod" class="tariff-input">
+                        <option value="day">por Día</option>
+                        <option value="week">por Semana</option>
+                    </select>
+                    <small style="text-align: center; color: #666; display: block; margin-top: 5px;">(Voltaje considerado: 220V)</small>
+                    <button class="reset-btn" style="width:100%; margin-top:10px; background: linear-gradient(45deg, #4CAF50, #2196F3);" onclick="addCustomAppliance()">Añadir Aparato</button>
+                </div>
+            </div>
+            
+            </div>
+
+            <div class="panel">
+                <h3>📈 Distribución por Aparato</h3>
+                <div class="chart-container">
+                    <canvas id="consumptionChart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+
+            <div class="panel reset-section">
+                <button class="reset-btn" onclick="resetAll()">🔄 Reiniciar Todo</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        let precio_kwh = 0.7125;
+        const voltage = 220; // Voltaje estándar en Perú :d
+
+        const appliances = {
+            foco_led: {
+                name: 'Foco LED 9W',
+                power: 9,
+                default_usage: { hours: 4, period: 'day' },
+                quantity: 0,
+                icon: '💡',
+                usage: '9W, 4h/día'
+                },
+                router: {
+                name: 'Router/Deco',
+                power: 10,
+                default_usage: { hours: 24, period: 'day' },
+                quantity: 0,
+                icon: '📶',
+                usage: 'Siempre encendido'
+                },
+                ducha: {
+                name: 'Ducha eléctrica',
+                power: 4500, // promedio
+                default_usage: { hours: 1/4, period: 'day' }, // ~15 min/día
+                quantity: 0,
+                icon: '🚿',
+                usage: '14500W: 15 min/día'
+                },
+            refri: { 
+                name: 'Refrigeradora', 
+                power: 80, // W
+                default_usage: { hours: 24, period: 'day' },
+                quantity: 0, 
+                icon: '🧊',
+                usage: '80W: Encendido 24/7'
+            },
+            tv: { 
+                name: 'Televisor LED', 
+                power: 145, // W
+                default_usage: { hours: 5, period: 'day' },
+                quantity: 0, 
+                icon: '📺',
+                usage: '145W: 5h/día'
+            },
+            lavadora: { 
+                name: 'Lavadora 7 kg', 
+                power: 1100, // W
+                default_usage: { hours: 1, period: 'week' },
+                quantity: 0, 
+                icon: '🌀',
+                usage: '1100W: 1h/semana'
+            },
+            micro: { 
+                name: 'Microondas', 
+                power: 1200, // W
+                default_usage: { hours: 0.25, period: 'day' }, 
+                quantity: 0, 
+                icon: '📦',
+                usage: ' 1200 W: 15 min/día'
+            },
+            laptop: { 
+                name: 'Laptop', 
+                power: 40, // W
+                default_usage: { hours: 4, period: 'day' },
+                quantity: 0, 
+                icon: '💻',
+                usage: '40W: 4h/día'
+            },
+            pc: { 
+                name: 'PC de escritorio', 
+                power: 265, // W
+                default_usage: { hours: 5, period: 'day' },
+                quantity: 0, 
+                icon: '🖥️',
+                usage: '265 W:  5h/día'
+            },
+            ac: { 
+                name: 'Aire acondicionado', 
+                power: 625, // W
+                default_usage: { hours: 8, period: 'day' },
+                quantity: 0, 
+                icon: '❄️',
+                usage: '625W: 8h/día'
+            },
+            ventilador: { 
+                name: 'Ventilador', 
+                power: 65, // W
+                default_usage: { hours: 12, period: 'day' },
+                quantity: 0, 
+                icon: '🌪️',
+                usage: '65W: 12h/día'
+            },
+            arrocera: { 
+                name: 'Olla arrocera', 
+                power: 700, // W
+                default_usage: { hours: 0.5, period: 'day' },
+                quantity: 0, 
+                icon: '🍚',
+                usage: '700W: 30 min/día'
+            },
+            plancha: { 
+                name: 'Plancha', 
+                power: 1000, // W
+                default_usage: { hours: 2, period: 'week' },
+                quantity: 0, 
+                icon: '👕',
+                usage: '1000W: 2h/semana'
+            }
+        };
+
+        let chart = null;
+
+        // --- LÓGICA DE CÁLCULO Y MANEJO DE DATOS ---
+
+        function calculateKwh(power, hours, period) {
+            if (period === 'day') {
+                return (power * hours * 30) / 1000;
+            }
+            return (power * hours * 4.35) / 1000; // (31*7+30*4+28)/12= 30.41 dias por mes = 4.35 semanas en el mes : Dias promedio en el mes
+        }
+
+        function initializeAppliances() {
+            for (const id in appliances) {
+                const appliance = appliances[id];
+                if (appliance.custom) continue;
+                appliance.current_usage = { ...appliance.default_usage };
+                appliance.kwh_per_month = calculateKwh(appliance.power, appliance.current_usage.hours, appliance.current_usage.period);
+            }
+        }
+
+        function updateUsage(id) {
+            event.stopPropagation();
+            const appliance = appliances[id];
+            const hoursInput = document.getElementById(`hours-${id}`);
+            const periodSelect = document.getElementById(`period-${id}`);
+            const newHours = parseFloat(hoursInput.value);
+
+            if (isNaN(newHours) || newHours < 0) {
+                alert("Por favor, ingrese un número válido de horas.");
+                return;
+            }
+
+            appliance.current_usage = { hours: newHours, period: periodSelect.value };
+            appliance.kwh_per_month = calculateKwh(appliance.power, newHours, periodSelect.value);
+            document.getElementById(`kwh-${id}`).textContent = `${Math.round(appliance.kwh_per_month)} kWh/mes`;
+            toggleEdit(id);
+
+            if (appliance.quantity > 0) {
+                updateTotalConsumption();
+                updateChart();
+            }
+        }
+
+        function addCustomAppliance() {
+            const name = document.getElementById('customName').value;
+            const amps = parseFloat(document.getElementById('customAmps').value);
+            const hours = parseFloat(document.getElementById('customHours').value);
+            const period = document.getElementById('customPeriod').value;
+
+            if (!name || !amps || !hours || amps <= 0 || hours <= 0) {
+                alert('Por favor, complete todos los campos con valores válidos.');
+                return;
+            }
+
+            const power = voltage * amps;
+            const monthlyConsumption = calculateKwh(power, hours, period);
+            const applianceId = 'custom_' + name.replace(/\s+/g, '_').toLowerCase() + '_' + Date.now();
+            
+            appliances[applianceId] = {
+                name: name,
+                kwh_per_month: Math.round(monthlyConsumption),
+                quantity: 0,
+                icon: '🔧',
+                usage: `${amps}A, ${hours}h/${period === 'day' ? 'día' : 'semana'}`,
+                custom: true
+            };
+
+            renderAppliances(document.getElementById('searchInput').value);
+            changeQuantity(applianceId, 1);
+
+            document.getElementById('customName').value = '';
+            document.getElementById('customAmps').value = '';
+            document.getElementById('customHours').value = '';
+        }
+
+        function changeQuantity(applianceId, change) {
+            event.stopPropagation();
+            if (!appliances[applianceId]) return;
+
+            const appliance = appliances[applianceId];
+            appliance.quantity = Math.max(0, (appliance.quantity || 0) + change);
+            
+            const qtyElement = document.getElementById(`qty-${applianceId}`);
+            if (qtyElement) qtyElement.textContent = appliance.quantity;
+            
+            const card = document.querySelector(`[data-appliance="${applianceId}"]`);
+            if (card) card.classList.toggle('selected', appliance.quantity > 0);
+            
+            updateTotalConsumption();
+            updateChart();
+        }
+
+        function resetAll() {
+            const customIdsToDelete = Object.keys(appliances).filter(id => appliances[id].custom);
+            customIdsToDelete.forEach(id => delete appliances[id]);
+
+            for (const id in appliances) {
+                appliances[id].quantity = 0;
+                appliances[id].current_usage = { ...appliances[id].default_usage };
+                appliances[id].kwh_per_month = calculateKwh(appliances[id].power, appliances[id].default_usage.hours, appliances[id].default_usage.period);
+            }
+            
+            renderAppliances();
+            updateTotalConsumption();
+            updateChart();
+        }
+
+        // --- RENDERIZADO Y ACTUALIZACIÓN DE UI ---
+
+        function toggleEdit(id) {
+            event.stopPropagation();
+            const editSection = document.getElementById(`edit-${id}`);
+            if (editSection) editSection.classList.toggle('visible');
+        }
+
+        function createApplianceCard(id, appliance) {
+            const kwh = Math.round(appliance.kwh_per_month || 0);
+            const isCustom = appliance.custom || false;
+
+            const editSectionHTML = isCustom ? '' : `
+                <div class="appliance-edit-section" id="edit-${id}">
+                    <div class="edit-controls">
+                        <input type="number" class="tariff-input" value="${appliance.current_usage.hours}" id="hours-${id}" step="0.5" onclick="event.stopPropagation()">
+                        <select class="tariff-input" id="period-${id}" onclick="event.stopPropagation()">
+                            <option value="day" ${appliance.current_usage.period === 'day' ? 'selected' : ''}>Horas/Día</option>
+                            <option value="week" ${appliance.current_usage.period === 'week' ? 'selected' : ''}>Horas/Semana</option>
+                        </select>
+                    </div>
+                    <div class="edit-actions">
+                        <button onclick="updateUsage('${id}')">Actualizar Uso</button>
+                    </div>
+                </div>
+            `;
+
+            return `
+                <div class="appliance-card ${(appliance.quantity || 0) > 0 ? 'selected' : ''}" data-appliance="${id}" onclick="toggleEdit('${id}')">
+                    ${!isCustom ? `<span class="edit-toggle-btn">⚙️</span>` : ''}
+                    <div class="appliance-header">
+                        <div class="appliance-icon">${appliance.icon}</div>
+                        <div class="appliance-info">
+                            <h3>${appliance.name}</h3>
+                            <div class="appliance-consumption" id="kwh-${id}">${kwh} kWh/mes</div>
+                            <div class="appliance-usage">${appliance.usage}</div>
+                        </div>
+                    </div>
+                    ${editSectionHTML}
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity('${id}', -1)">−</button>
+                        <div class="quantity-display" id="qty-${id}">${appliance.quantity || 0}</div>
+                        <button class="quantity-btn" onclick="changeQuantity('${id}', 1)">+</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAppliances(filter = '') {
+            const grid = document.getElementById('appliancesGrid');
+            grid.innerHTML = Object.entries(appliances)
+                .filter(([id, appliance]) => appliance.name.toLowerCase().includes(filter.toLowerCase()))
+                .map(([id, appliance]) => createApplianceCard(id, appliance))
+                .join('');
+            document.getElementById('noResults').style.display = grid.innerHTML === '' ? 'block' : 'none';
+        }
+
+        function updateTotalConsumption() {
+            let total = 0;
+            for (const id in appliances) {
+                total += (appliances[id].kwh_per_month || 0) * (appliances[id].quantity || 0);
+            }
+            
+            const totalElement = document.getElementById('totalConsumption');
+            totalElement.textContent = Math.round(total);
+            document.getElementById('estimatedCost').textContent = (total * precio_kwh).toFixed(2);
+            totalElement.classList.add('pulse');
+            setTimeout(() => totalElement.classList.remove('pulse'), 500);
+        }
+
+        function updateChart() {
+            const activeAppliances = Object.values(appliances).filter(a => a.quantity > 0);
+            const ctx = document.getElementById('consumptionChart').getContext('2d');
+            if (chart) chart.destroy();
+
+            const chartData = {
+                labels: activeAppliances.length ? activeAppliances.map(a => a.name) : ['Sin electrodomésticos'],
+                datasets: [{
+                    data: activeAppliances.length ? activeAppliances.map(a => a.kwh_per_month * a.quantity) : [1],
+                    backgroundColor: activeAppliances.length ? ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'] : ['#e0e0e0']
+                }]
+            };
+
+            chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: activeAppliances.length > 0, position: 'bottom', labels: { usePointStyle: true, padding: 15, font: { size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (!activeAppliances.length) return 'N/A';
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${context.label}: ${Math.round(context.parsed)} kWh/mes (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- INICIALIZACIÓN Y EVENTOS ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeAppliances();
+            renderAppliances();
+            updateTotalConsumption();
+            updateChart();
+
+            document.getElementById('tariffInput').addEventListener('input', (e) => {
+                precio_kwh = parseFloat(e.target.value) || 0;
+                updateTotalConsumption();
+            });
+
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                renderAppliances(e.target.value);
+            });
+        });
+    </script>
+</body>
+</html>
